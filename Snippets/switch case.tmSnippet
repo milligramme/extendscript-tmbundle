@@ -4,10 +4,10 @@
 <dict>
 	<key>content</key>
 	<string>switch(${1:object}){
-	case ${2:"Things"}: ${3:Do_something}; break;
-	case ${2:"Things"}: ${3:Do_something}; break;
-	case ${2:"Things"}: ${3:Do_something}; break;
-	default: ${4:}; break;
+	case "${21:Things}": ${22:Do_something}; break;
+	case "${31:Things}": ${32:Do_something}; break;
+	case "${41:Things}": ${42:Do_something}; break;
+	default: ${50:}; break;
 }
 </string>
 	<key>name</key>
