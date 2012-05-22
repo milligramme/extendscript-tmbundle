@@ -45,7 +45,9 @@ fi
 osascript -e "on run argv
  set fileName to item 1 of argv
  tell application \"$app\"
-   $run
+   with timeout of (1 * 60 * 60) seconds
+     $run
+   end timeout
  end tell
 end run" "${TM_FILEPATH}.tmp.jsx"
 
