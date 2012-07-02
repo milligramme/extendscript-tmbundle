@@ -9,7 +9,7 @@
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
-	<string>~@</string>
+	<string>~@%</string>
 	<key>name</key>
 	<string>open ESTK CS5.5</string>
 	<key>output</key>

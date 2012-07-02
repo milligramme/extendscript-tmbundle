@@ -61,7 +61,7 @@ rm "${TM_FILEPATH}.log"
 	<key>input</key>
 	<string>document</string>
 	<key>keyEquivalent</key>
-	<string>@</string>
+	<string>@%</string>
 	<key>name</key>
 	<string>Run CS5.5</string>
 	<key>output</key>
