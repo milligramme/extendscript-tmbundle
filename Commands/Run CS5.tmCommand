@@ -7,16 +7,16 @@
 	<key>command</key>
 	<string># duplicate script file
 # override $.write, $.writeln
-echo "var file=new File(\"${TM_FILEPATH}.log\");file.encoding=\"UTF8\";file.lineFeed=\"Mac\";file.open('e');
-\$.write = function(){file.seek(0,2);file.write(arguments[0])};
-\$.writeln = function(){file.seek(0,2);file.writeln(arguments[0])};"&gt; "${TM_FILEPATH}.tmp.jsx"
+echo "var aZ16qB46=new File(\"${TM_FILEPATH}.log\");aZ16qB46.encoding=\"UTF8\";aZ16qB46.lineFeed=\"Mac\";aZ16qB46.open('e');
+\$.write = function(){aZ16qB46.seek(0,2);aZ16qB46.write(arguments[0])};
+\$.writeln = function(){aZ16qB46.seek(0,2);aZ16qB46.writeln(arguments[0])};"&gt; "${TM_FILEPATH}.tmp.jsx"
 
 # write scripts contents
 cat "${TM_FILEPATH}" &gt;&gt; "${TM_FILEPATH}.tmp.jsx"
 echo '' &gt;&gt; "${TM_FILEPATH}.tmp.jsx"
 
 # write where to close the log
-echo "file.close();" &gt;&gt; "${TM_FILEPATH}.tmp.jsx"
+echo "aZ16qB46.close();" &gt;&gt; "${TM_FILEPATH}.tmp.jsx"
 
 # read each line, search #target
 while read -r LINE; do
@@ -35,7 +35,7 @@ elif echo "$target" | fgrep -iq 'illustrator' ; then
   run="do javascript file (fileName as POSIX file)"
 else
   app="/Applications/Adobe InDesign CS5/Adobe InDesign CS5.app"
-  run="do script file (fileName as POSIX file) language javascript"
+  run="do script aZ16qB46 (fileName as POSIX file) language javascript"
 fi
 
 # create log file
