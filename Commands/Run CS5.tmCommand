@@ -35,7 +35,7 @@ elif echo "$target" | fgrep -iq 'illustrator' ; then
   run="do javascript file (fileName as POSIX file)"
 else
   app="/Applications/Adobe InDesign CS5/Adobe InDesign CS5.app"
-  run="do script aZ16qB46 (fileName as POSIX file) language javascript"
+  run="do script file (fileName as POSIX file) language javascript"
 fi
 
 # create log file
