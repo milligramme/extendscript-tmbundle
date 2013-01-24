@@ -19,18 +19,19 @@ ${1:w}.btn_g = ${1:w}.add('group');
 var ok_btn  = ${1:w}.btn_g.add('button', u, "OK", {name: "ok"});
 var can_btn = ${1:w}.btn_g.add('button', u, "Cancel", {name: "cancel"});
 
-ok_btn.minimumSize = can_btn.minimumSize = [66,23];
+ok_btn.minimumSize = can_btn.minimumSize = [66,23]; //fix for cs3
 ok_btn.size  = ok_btn.minimumSize;
 can_btn.size = can_btn.minimumSize;
 
-
+var flg = false;
 ok_btn.onClick = function () {
-	// do somthing
-	${1:w}.close();
+  // do somthing
+  flg = true;
+  ${1:w}.close();
 }
 
 can_btn.onClick = function () {
-	${1:w}.close();
+  ${1:w}.close();
 }
 
 ${1:w}.show();</string>

@@ -6,11 +6,11 @@
 	<string>var target_obj = ${1:app.documents[0]};
 var find_grep_obj = {
   findWhat : "${2:[A-Z]}"
-  };
+};
 var change_grep_obj = {
   changeTo : "${3:0}",
   pointSize : ${4:36}
-  };
+};
 
 with(app.findChangeGrepOptions){
   includeFootnotes            = false;
@@ -37,6 +37,8 @@ function grep_find_and_change(target_obj, find_grep_obj, change_grep_obj){
 }</string>
 	<key>name</key>
 	<string>grep_find_and_change</string>
+	<key>scope</key>
+	<string>source.js</string>
 	<key>tabTrigger</key>
 	<string>gfc</string>
 	<key>uuid</key>

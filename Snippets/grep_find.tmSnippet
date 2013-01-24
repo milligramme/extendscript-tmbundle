@@ -6,7 +6,7 @@
 	<string>var target_obj = ${1:app.documents[0]};
 var find_grep_obj = {
   findWhat : "${2:[A-Z]}"
-  };
+};
 
 with(app.findChangeGrepOptions){
   includeFootnotes            = false;
@@ -30,6 +30,8 @@ function grep_find(target_obj, find_grep_obj){
 </string>
 	<key>name</key>
 	<string>grep_find</string>
+	<key>scope</key>
+	<string>source.js</string>
 	<key>tabTrigger</key>
 	<string>gf</string>
 	<key>uuid</key>

@@ -6,10 +6,10 @@
 	<string>var target_obj = ${1:app.documents[0]};
 var find_txt_obj = {
   findWhat : "${2:find}",
-  };
+};
 var change_txt_obj = {
   changeTo : "${3:change}",
-  };
+};
 
 with(app.findChangeTextOptions){
   caseSensitive               = false;
@@ -36,6 +36,8 @@ function text_find_and_change(target_obj, find_txt_obj, change_txt_obj){
 }</string>
 	<key>name</key>
 	<string>text_find_and_change</string>
+	<key>scope</key>
+	<string>source.js</string>
 	<key>tabTrigger</key>
 	<string>tfc</string>
 	<key>uuid</key>
