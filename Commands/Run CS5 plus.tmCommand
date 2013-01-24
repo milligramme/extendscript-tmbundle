@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+# -*- coding:  utf-8 -*-
+
+require ENV["TM_SUPPORT_PATH"] + "/lib/tm/executor"
+require ENV["TM_SUPPORT_PATH"] + "/lib/tm/save_current_document"
+require 'tempfile'
+require "erb"
+
+TextMate.save_current_document
+TextMate::Executor.make_project_master_current_document
+
+error_fd = nil
+document = File.read(ENV["TM_FILEPATH"])
+
+APP_PATH_IDCS5 = "/Applications/Adobe\ InDesign\ CS5/Adobe\ InDesign\ CS5.app"
+APP_PATH_AICS5 = "/Applications/Adobe\ Illustrator\ CS5/Adobe\ Illustrator\ CS5.app"
+APP_PATH_PSCS5 = "/Applications/Adobe\ Photoshop\ CS5/Adobe\ Photoshop\ CS5.app"
+
+temp_applescript = Tempfile::new("temp_applescript", "#{ENV['HOME']}/Desktop")
+temp_logger      = Tempfile::new("temp_logger", "#{ENV['HOME']}/Desktop")
+temp_jsx         = Tempfile::new("temp_jsx", "#{ENV['HOME']}/Desktop")
+
+open(ENV["TM_FILEPATH"]) do |f|
+  # target app.
+  tar = ""
+  jsx = f.readlines
+  jsx.each do |line|
+    tar = line.match(/^#target.+/).nil? ? '' : line.match(/^#target.+/).to_s.downcase
+    break unless tar.empty?
+  end
+
+  # override $.write and $.writeln function, set temp_logger obj to temp_jsx
+  open(temp_jsx.path, "w") do |j|
+    # rand_var = (('a'..'z').to_a + ('A'..'Z').to_a).sample(8).join
+    rand_var = (0..8).to_a.map { |e| e = (('a'..'z').to_a + ('A'..'Z').to_a)[rand(52).to_i] }.join 
+    # TODO Script Error: Expected end of line but found identifier.
+    JSX_HEADER = &lt;&lt;-JSX_HEAD
+var &lt;%= rand_var %&gt; = new File(\"&lt;%= temp_logger.path %&gt;\");
+&lt;%= rand_var %&gt;.encoding=\"UTF8\";
+&lt;%= rand_var %&gt;.lineFeed=\"Unix\";
+&lt;%= rand_var %&gt;.open(\"e\");
+$.write=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write(arguments[0])};
+$.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.writeln(arguments[0])};
+
+&lt;%= jsx.join("\n") %&gt;
+      
+&lt;%= rand_var %&gt;".close();",
+"File(&lt;%= rand_var %&gt;.fullpath).delete;"
+JSX_HEAD
+    scpt_escaped = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
+    j.write(scpt_escaped)
+  end
+
+  # switch application
+  if tar.match 'photoshop'
+    app = APP_PATH_PSCS5
+    run = "do javascript file (fileName as POSIX file)"
+  elsif tar.match 'illustrator'
+    app = APP_PATH_AICS5
+    run = "do javascript file (fileName as POSIX file)"
+  else
+    app = APP_PATH_IDCS5
+    run = "do script file (fileName as POSIX file) language javascript"
+  end
+
+  # generate applescript
+  # run applescript by osascript
+  AS_TEMPLATE = &lt;&lt;-APPLESCRIPT
+on run argv
+  set fileName to item 1 of argv
+  tell application \"&lt;%= app %&gt;\"
+    with timeout of (1 * 60 * 60) seconds
+      &lt;%= run %&gt;
+    end timeout
+  end tell
+end run
+APPLESCRIPT
+  run_src = ERB.new(AS_TEMPLATE).result(binding)
+  
+  # write script to applescript file
+  open(temp_applescript.path, "w") do |tmp|
+    tmp.puts run_src
+  end
+  # debug
+  system `cat #{temp_applescript.path} &gt; ~/Desktop/as.scpt`
+  system `cat #{temp_jsx.path} &gt; ~/Desktop/jsx.jsx`
+
+  # osascript -ss -e ScriptSource TargetFile
+  # or
+  # osascript -ss ScriptProgram TargetFile
+  # TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", "-e", run_src, temp_jsx.path ) do |str, type|
+  TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", temp_applescript.path, temp_jsx.path ) do |str, type|
+    error_fd ||= IO.for_fd(ENV["TM_ERROR_FD"].to_i)
+
+    case type
+    when :err
+      if str =~ /^([^\:]+):(\d+):(\d+): (.*?): (.*) \((-?\d+)\)$/ then
+        filepath, start,  stop, err, msg, status = $1, $2.to_i, $3.to_i, $4, $5, $6
+        err = err.gsub(/\b\w(?=\w{3,})/) { |m| m.upcase }
+              
+        error_fd &lt;&lt; "&lt;div id=\"exception_report\" class=\"framed\"&gt;\n"
+        error_fd &lt;&lt; "&lt;p id=\"exception\"&gt;&lt;strong&gt;#{htmlize err}&lt;/strong&gt;: #{htmlize msg}&lt;/p&gt;\n"
+        
+        temp_document = File.read(temp_jsx.path)
+        from = temp_document[0..start].rindex(/^/)
+        to = start + temp_document[start..-1].index(/$/)
+        src =  temp_document[from...to]
+            
+        line = temp_document[0...start].count("\n") + 1
+        column = start - from
+            
+        link = "txmt://open?line=#{line}&amp;column=#{column}"
+        error_fd &lt;&lt; "&lt;pre&gt;#{src}\n"
+        error_fd &lt;&lt; "#{' ' * (column)}↑&lt;/pre&gt;"
+        error_fd &lt;&lt;  "&lt;blockquote&gt;&lt;a href=\"#{link}\"&gt;line #{line}, column #{column}&lt;/a&gt; in #{ENV['TM_DISPLAYNAME']}\n"
+            
+        error_fd &lt;&lt; "&lt;p&gt;Error #{status}.&lt;/p&gt;\n"
+        error_fd &lt;&lt; "&lt;/div&gt;\n"
+              
+        error_fd.flush
+        ""
+      else
+        "&lt;span class=\"err\" style=\"color:red;\"&gt;#{htmlize(str)}&lt;/span&gt;&lt;br/&gt;"
+      end
+    when :out
+      # open(temp_logger.path) do |l|
+      #   str &lt;&lt; l.read
+      # end
+      htmlize(str)
+    end
+  end
+
+end
+# system `cat #{temp_logger.path} &gt; ~/Desktop/logger.txt`
+temp_applescript.close
+temp_logger.close
+temp_jsx.close
+</string>
+	<key>keyEquivalent</key>
+	<string>^@5</string>
+	<key>name</key>
+	<string>Run CS5 plus</string>
+	<key>scope</key>
+	<string>source.js</string>
+	<key>uuid</key>
+	<string>619EFC02-2121-4D8D-BFEE-66370FBDF752</string>
+</dict>
+</plist>
