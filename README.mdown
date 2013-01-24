@@ -3,8 +3,20 @@
 usage:
 
 落としてきたフォルダ名を[ExtendScript.tmbundle]として、
+
+### TextMate1 の場合
 <Home>/Library/Application Support/TextMate/Bundles
 に入れて下さい。
+
+### TextMate2 の場合
+<Home>/Library/Application Support/Avian/Pristine Copy/Bundles
+に入れてください。 Edit Bundles.. メニューにて変更した箇所は
+<Home>/Library/Application Support/Avian/Bundles
+に同名の差分（デルタバンドル）として保存されます
+
+または、scmの管理下で自己管理したい場合は
+<Home>/Library/Application Support/Avian/Bundles
+に入れてください。
 
 Scope Selector の　[source.js] は　JavaScript.tmbundle に依存しています。
 JavaScript.tmbundle の　Language JavaScript の 3行目
