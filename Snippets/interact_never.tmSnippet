@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTRACT;
+</string>
+	<key>name</key>
+	<string>interact_never</string>
+	<key>scope</key>
+	<string>source.js</string>
+	<key>tabTrigger</key>
+	<string>intera</string>
+	<key>uuid</key>
+	<string>1168567C-A1C6-49C8-8D17-5C4DAFE873C1</string>
+</dict>
+</plist>
