@@ -39,7 +39,7 @@ function text_find_and_change(target_obj, find_txt_obj, change_txt_obj){
 	<key>scope</key>
 	<string>source.js</string>
 	<key>tabTrigger</key>
-	<string>tfc</string>
+	<string>find</string>
 	<key>uuid</key>
 	<string>438389D7-FF13-4813-8E72-00C9F7B3ADD7</string>
 </dict>

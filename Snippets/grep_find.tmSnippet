@@ -33,7 +33,7 @@ function grep_find(target_obj, find_grep_obj){
 	<key>scope</key>
 	<string>source.js</string>
 	<key>tabTrigger</key>
-	<string>gf</string>
+	<string>find</string>
 	<key>uuid</key>
 	<string>A1EE8D94-67A2-4A49-8EB5-71F009933209</string>
 </dict>

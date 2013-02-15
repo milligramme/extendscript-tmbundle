@@ -40,7 +40,7 @@ function grep_find_and_change(target_obj, find_grep_obj, change_grep_obj){
 	<key>scope</key>
 	<string>source.js</string>
 	<key>tabTrigger</key>
-	<string>gfc</string>
+	<string>find</string>
 	<key>uuid</key>
 	<string>46009037-620F-43C7-A1C5-2E4B798569C0</string>
 </dict>

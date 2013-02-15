@@ -35,7 +35,7 @@ function text_find(target_obj, find_txt_obj){
 	<key>scope</key>
 	<string>source.js</string>
 	<key>tabTrigger</key>
-	<string>tf</string>
+	<string>find</string>
 	<key>uuid</key>
 	<string>75AFE4F6-8AE3-4CF4-A400-C9EE2E8C2731</string>
 </dict>
