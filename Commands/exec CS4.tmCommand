@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>beforeRunningCommand</key>
+	<string>nop</string>
 	<key>command</key>
 	<string>#!/usr/bin/env ruby
 # -*- coding:  utf-8 -*-
@@ -135,10 +137,14 @@ end
 </string>
 	<key>input</key>
 	<string>document</string>
+	<key>inputFormat</key>
+	<string>text</string>
 	<key>keyEquivalent</key>
-	<string>^@4</string>
+	<string>@4</string>
 	<key>name</key>
 	<string>exec CS4</string>
+	<key>outputCaret</key>
+	<string>afterOutput</string>
 	<key>outputFormat</key>
 	<string>html</string>
 	<key>outputLocation</key>
@@ -149,5 +155,7 @@ end
 	<string>process.run.script.ruby</string>
 	<key>uuid</key>
 	<string>A201B60F-B7E4-4385-9CD5-E85698564293</string>
+	<key>version</key>
+	<integer>2</integer>
 </dict>
 </plist>

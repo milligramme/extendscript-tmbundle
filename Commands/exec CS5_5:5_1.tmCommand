@@ -137,10 +137,14 @@ end
 </string>
 	<key>input</key>
 	<string>document</string>
+	<key>inputFormat</key>
+	<string>text</string>
 	<key>keyEquivalent</key>
-	<string>^@%</string>
+	<string>@%</string>
 	<key>name</key>
 	<string>exec CS5.5/5.1</string>
+	<key>outputCaret</key>
+	<string>afterOutput</string>
 	<key>outputFormat</key>
 	<string>html</string>
 	<key>outputLocation</key>
@@ -151,5 +155,7 @@ end
 	<string>process.run.script.ruby</string>
 	<key>uuid</key>
 	<string>FA8DD309-3476-4A44-A5A5-A96C94DE94C1</string>
+	<key>version</key>
+	<integer>2</integer>
 </dict>
 </plist>
