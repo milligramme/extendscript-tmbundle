@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>command</key>
+	<string>#!/usr/bin/env ruby
+# -*- coding:  utf-8 -*-
+
+require ENV["TM_SUPPORT_PATH"] + "/lib/tm/executor"
+require ENV["TM_SUPPORT_PATH"] + "/lib/tm/save_current_document"
+require 'tempfile'
+require "erb"
+
+cs_version = "CS5"
+
+TextMate.save_current_document
+TextMate::Executor.make_project_master_current_document
+
+error_fd = nil
+document = File.read(ENV["TM_FILEPATH"])
+
+APP_PATH_ID = "Adobe InDesign #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}.app"
+APP_PATH_AI = "/Applications/Adobe Illustrator #{cs_version}/Adobe Illustrator.app"
+APP_PATH_PS = "Adobe Photoshop #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}.app"
+
+tempo_as = Tempfile::new(["tempo_as",".scpt"])
+tempo_wr = Tempfile::new(["tempo_wr",".log"])
+tempo_js = Tempfile::new(["tempo_js",".jsx"])
+
+target = ""
+
+open(ENV["TM_FILEPATH"]) do |org_js|
+  # target app.
+  jsx = org_js.readlines
+  jsx.each do |line|
+    target = line.match(/^#target\s+.+/).nil? ? '' : line.match(/^#target\s+.+/).to_s
+    break unless target.empty?
+  end
+  # override $.write and $.writeln function, set tempo_wr obj to tempo_js
+  open(tempo_js.path, "w") do |js|
+    # rand_var = (('a'..'z').to_a + ('A'..'Z').to_a).sample(8).join # =&lt; ruby1.9
+    rand_var = (0..8).to_a.map { |e| e = (('a'..'z').to_a + ('A'..'Z').to_a)[rand(52).to_i] }.join 
+
+    JSX_HEADER = &lt;&lt;-JSX_HEAD
+var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
+&lt;%= rand_var %&gt;.encoding="UTF8";
+&lt;%= rand_var %&gt;.lineFeed="unix";
+&lt;%= rand_var %&gt;.open("e");
+$.write=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write(arguments[0])};
+$.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.writeln(arguments[0])};
+
+&lt;%= jsx.join("\n") %&gt;
+JSX_HEAD
+    run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
+
+    js.write(run_jsx)
+  end
+end
+
+# switch application
+if target.match 'photoshop'
+  app = APP_PATH_PS
+  run = "do javascript file (fileName as POSIX file)"
+elsif target.match 'illustrator'
+  app = APP_PATH_AI
+  run = "do javascript file (fileName as POSIX file)"
+else
+  app = APP_PATH_ID
+  run = "do script file (fileName as POSIX file) language javascript"
+end
+
+
+# generate applescript
+# run applescript by osascript
+AS_TEMPLATE = &lt;&lt;-APPLESCRIPT
+on run argv
+  set fileName to item 1 of argv
+  tell application \"&lt;%= app %&gt;\"
+    with timeout of (1 * 60 * 60) seconds
+      &lt;%= run %&gt;
+    end timeout
+  end tell
+  return true
+end run
+APPLESCRIPT
+run_scpt = ERB.new(AS_TEMPLATE).result(binding)
+
+# write script to applescript file
+open(tempo_as.path, "w") do |as|
+  as.write run_scpt
+end
+
+
+# osascript -ss ScriptProgram TargetFile
+TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", tempo_as.path, tempo_js.path ) do |str, type|
+  error_fd ||= IO.for_fd(ENV["TM_ERROR_FD"].to_i)
+  case type
+  when :err
+    # error
+    if str =~ /^([^\:]+):(\d+):(\d+): (.*?): (.*) \((-?\d+)\)$/ then
+      filepath, start,  stop, err, msg, status = $1, $2.to_i, $3.to_i, $4, $5, $6
+      err = err.gsub(/\b\w(?=\w{3,})/) { |m| m.upcase }
+            
+      error_fd &lt;&lt; "&lt;div id=\"exception_report\" class=\"framed\"&gt;\n"
+      error_fd &lt;&lt; "&lt;p id=\"exception\"&gt;&lt;strong&gt;#{htmlize err}&lt;/strong&gt;: #{htmlize msg}&lt;/p&gt;\n"
+      
+      temp_document = File.read(ENV["TM_FILEPATH"])
+      from = temp_document[0..start].rindex(/^/)
+      to = start + temp_document[start..-1].index(/$/)
+      src =  temp_document[from...to]
+          
+      line = temp_document[0...start].count("\n") + 1
+      column = start - from
+          
+      link = "txmt://open?line=#{line}&amp;column=#{column}"
+      error_fd &lt;&lt; "&lt;pre&gt;#{src}\n"
+      error_fd &lt;&lt; "#{' ' * (column)}↑&lt;/pre&gt;"
+      error_fd &lt;&lt;  "&lt;blockquote&gt;&lt;a href=\"#{link}\"&gt;line #{line}, column #{column}&lt;/a&gt; in #{ENV['TM_DISPLAYNAME']}\n"
+          
+      error_fd &lt;&lt; "&lt;p&gt;Error #{status}.&lt;/p&gt;\n"
+      error_fd &lt;&lt; "&lt;/div&gt;\n"
+      error_fd.flush
+      ""
+    else
+      "&lt;span class=\"err\" style=\"color:red;\"&gt;#{htmlize(str)}&lt;/span&gt;&lt;br/&gt;"
+    end
+  when :out
+    # read log writen by $.write(), $.writeln() in tempo_js
+    open(tempo_wr.path) do |log|
+      str &lt;&lt; log.read
+    end
+    htmlize(str)
+  end
+end
+</string>
+	<key>input</key>
+	<string>document</string>
+	<key>keyEquivalent</key>
+	<string>^@5</string>
+	<key>name</key>
+	<string>exec CS5</string>
+	<key>outputFormat</key>
+	<string>html</string>
+	<key>outputLocation</key>
+	<string>newWindow</string>
+	<key>scope</key>
+	<string>source.js</string>
+	<key>semanticClass</key>
+	<string>process.run.script.ruby</string>
+	<key>uuid</key>
+	<string>F81EC410-9418-4AEE-AB12-281AE6D57F15</string>
+</dict>
+</plist>
