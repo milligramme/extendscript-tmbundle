@@ -1,5 +1,7 @@
 # ExtendScript TextMate Bundle
 
+forked from [kanemu/extendscript.tmbundle · GitHub](https://github.com/kanemu/extendscript.tmbundle )
+
 usage:
 
 落としてきたフォルダ名を[ExtendScript.tmbundle]として、
