@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTRACT;
+	<string>app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTERACT;
 </string>
 	<key>name</key>
 	<string>interact_never</string>
