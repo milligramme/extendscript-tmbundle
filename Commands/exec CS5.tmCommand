@@ -36,16 +36,14 @@ target = ""
 
 open(tm_filepath) do |org_js|
   # target app.
-  jsx = org_js.readlines
-  jsx.each do |line|
-    target = line.match(/^#target\s+.+/).nil? ? '' : line.match(/^#target\s+.+/).to_s
-    break unless target.empty?
-  end
+  jsx = org_js.read
+  target = jsx.scan(/^#target\s+.+/).first || "#target indesign"
+
   # override $.write and $.writeln function, set tempo_wr obj to tempo_js
   open(tempo_js.path, "w") do |js|
-    # rand_var = (('a'..'z').to_a + ('A'..'Z').to_a).sample(8).join # =&lt; ruby1.9
     rand_var = SecureRandom.random_bytes(4).unpack("H*").join
     include_current_path = tm_filepath.parent.to_s
+
     JSX_HEADER = &lt;&lt;-JSX_HEAD
 var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
 &lt;%= rand_var %&gt;.encoding="UTF8";
@@ -56,7 +54,7 @@ $.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write
 
 #includepath &lt;%= include_current_path %&gt;
 
-&lt;%= jsx.join("\n") %&gt;
+&lt;%= jsx %&gt;
 JSX_HEAD
     @run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
 
