@@ -12,6 +12,8 @@ require ENV["TM_SUPPORT_PATH"] + "/lib/tm/executor"
 require ENV["TM_SUPPORT_PATH"] + "/lib/tm/save_current_document"
 require 'tempfile'
 require "erb"
+require "pathname"
+require "securerandom"
 
 cs_version = "CS4"
 
@@ -19,29 +21,28 @@ TextMate.save_current_document
 TextMate::Executor.make_project_master_current_document
 
 error_fd = nil
-document = File.read(ENV["TM_FILEPATH"])
+tm_filepath = Pathname.new(ENV["TM_FILEPATH"])
+document = tm_filepath.read
 
 APP_PATH_ID = "Adobe InDesign #{cs_version}.app"
 APP_PATH_AI = "/Applications/Adobe Illustrator #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}/Adobe Illustrator.app"
 APP_PATH_PS = "Adobe Photoshop #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}.app"
 
-tempo_as = Tempfile::new(["tempo_as",".scpt"])
-tempo_wr = Tempfile::new(["tempo_wr",".log"])
-tempo_js = Tempfile::new(["tempo_js",".jsx"])
+tempo_as = Tempfile::new(["",".scpt"])
+tempo_wr = Tempfile::new(["",".log"])
+tempo_js = Tempfile::new(["",".jsx"])
 
 target = ""
 
-open(ENV["TM_FILEPATH"]) do |org_js|
+open(tm_filepath) do |org_js|
   # target app.
-  jsx = org_js.readlines
-  jsx.each do |line|
-    target = line.match(/^#target\s+.+/).nil? ? '' : line.match(/^#target\s+.+/).to_s
-    break unless target.empty?
-  end
+  jsx = org_js.read
+  target = jsx.scan(/^#target\s+.+/).first || "#target indesign"
+
   # override $.write and $.writeln function, set tempo_wr obj to tempo_js
   open(tempo_js.path, "w") do |js|
-    # rand_var = (('a'..'z').to_a + ('A'..'Z').to_a).sample(8).join # =&lt; ruby1.9
-    rand_var = (0..8).to_a.map { |e| e = (('a'..'z').to_a + ('A'..'Z').to_a)[rand(52).to_i] }.join 
+    rand_var = SecureRandom.random_bytes(4).unpack("H*").join
+    include_current_path = tm_filepath.parent.to_s
 
     JSX_HEADER = &lt;&lt;-JSX_HEAD
 var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
@@ -51,11 +52,13 @@ var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
 $.write=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write(arguments[0])};
 $.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.writeln(arguments[0])};
 
-&lt;%= jsx.join("\n") %&gt;
-JSX_HEAD
-    @run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
+#includepath &lt;%= include_current_path %&gt;
 
-    js.write(@run_jsx)
+&lt;%= jsx %&gt;
+JSX_HEAD
+    run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
+
+    js.write(run_jsx)
   end
 end
 
@@ -105,20 +108,7 @@ TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", tempo_as.path,
             
       error_fd &lt;&lt; "&lt;div id=\"exception_report\" class=\"framed\"&gt;\n"
       error_fd &lt;&lt; "&lt;p id=\"exception\"&gt;&lt;strong&gt;#{htmlize err}&lt;/strong&gt;: #{htmlize msg}&lt;/p&gt;\n"
-      
-      temp_document = @run_jsx
-      from = temp_document[0..start].rindex(/^/)
-      to = start + temp_document[start..-1].index(/$/)
-      src =  "" #temp_document[from...to]
-          
-      line = temp_document[0...start].count("\n") + 1
-      column = start - from
-          
-      # link = "txmt://open?line=#{line}&amp;column=#{column}"
-      # error_fd &lt;&lt; "&lt;pre&gt;#{src}\n"
-      # error_fd &lt;&lt; "#{' ' * (column)}↑&lt;/pre&gt;"
-      # error_fd &lt;&lt;  "&lt;blockquote&gt;&lt;a href=\"#{link}\"&gt;line #{line}, column #{column}&lt;/a&gt; in #{ENV['TM_DISPLAYNAME']}\n"
-          
+                
       error_fd &lt;&lt; "&lt;p&gt;Error #{status}.&lt;/p&gt;\n"
       error_fd &lt;&lt; "&lt;/div&gt;\n"
       error_fd.flush
@@ -128,9 +118,10 @@ TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", tempo_as.path,
     end
   when :out
     # read log writen by $.write(), $.writeln() in tempo_js
-    open(tempo_wr.path) do |log|
-      str &lt;&lt; log.read
-    end
+    tempo_wr.open
+    str &lt;&lt; tempo_wr.read
+    tempo_wr.close!
+
     htmlize(str)
   end
 end
