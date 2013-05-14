@@ -28,9 +28,9 @@ APP_PATH_ID = "Adobe InDesign #{cs_version}.app"
 APP_PATH_AI = "/Applications/Adobe Illustrator #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}/Adobe Illustrator.app"
 APP_PATH_PS = "Adobe Photoshop #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}.app"
 
-tempo_as = Tempfile::new(["tempo_as",".scpt"])
-tempo_wr = Tempfile::new(["tempo_wr",".log"])
-tempo_js = Tempfile::new(["tempo_js",".jsx"])
+tempo_as = Tempfile::new(["",".scpt"])
+tempo_wr = Tempfile::new(["",".log"])
+tempo_js = Tempfile::new(["",".jsx"])
 
 target = ""
 
