@@ -12,6 +12,8 @@ require ENV["TM_SUPPORT_PATH"] + "/lib/tm/executor"
 require ENV["TM_SUPPORT_PATH"] + "/lib/tm/save_current_document"
 require 'tempfile'
 require "erb"
+require "pathname"
+require "securerandom"
 
 cs_version = "CS5"
 
@@ -19,7 +21,8 @@ TextMate.save_current_document
 TextMate::Executor.make_project_master_current_document
 
 error_fd = nil
-document = File.read(ENV["TM_FILEPATH"])
+tm_filepath = Pathname.new(ENV["TM_FILEPATH"])
+document = tm_filepath.read
 
 APP_PATH_ID = "Adobe InDesign #{cs_version}.app"
 APP_PATH_AI = "/Applications/Adobe Illustrator #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}/Adobe Illustrator.app"
@@ -31,7 +34,7 @@ tempo_js = Tempfile::new(["tempo_js",".jsx"])
 
 target = ""
 
-open(ENV["TM_FILEPATH"]) do |org_js|
+open(tm_filepath) do |org_js|
   # target app.
   jsx = org_js.readlines
   jsx.each do |line|
@@ -41,8 +44,8 @@ open(ENV["TM_FILEPATH"]) do |org_js|
   # override $.write and $.writeln function, set tempo_wr obj to tempo_js
   open(tempo_js.path, "w") do |js|
     # rand_var = (('a'..'z').to_a + ('A'..'Z').to_a).sample(8).join # =&lt; ruby1.9
-    rand_var = (0..8).to_a.map { |e| e = (('a'..'z').to_a + ('A'..'Z').to_a)[rand(52).to_i] }.join 
-
+    rand_var = SecureRandom.random_bytes(4).unpack("H*").join
+    include_current_path = tm_filepath.parent.to_s
     JSX_HEADER = &lt;&lt;-JSX_HEAD
 var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
 &lt;%= rand_var %&gt;.encoding="UTF8";
@@ -50,6 +53,8 @@ var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
 &lt;%= rand_var %&gt;.open("e");
 $.write=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write(arguments[0])};
 $.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.writeln(arguments[0])};
+
+#includepath &lt;%= include_current_path %&gt;
 
 &lt;%= jsx.join("\n") %&gt;
 JSX_HEAD
