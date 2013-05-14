@@ -94,9 +94,7 @@ open(tempo_as.path, "w") do |as|
   as.write run_scpt
 end
 
-
-# osascript -ss ScriptProgram TargetFile
-TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", tempo_as.path, tempo_js.path ) do |str, type|
+TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", tempo_as.path, tempo_js.path ) do |str, type|
   error_fd ||= IO.for_fd(ENV["TM_ERROR_FD"].to_i)
   case type
   when :err
