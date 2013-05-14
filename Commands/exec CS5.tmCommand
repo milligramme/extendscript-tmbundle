@@ -41,16 +41,15 @@ open(tm_filepath) do |org_js|
 
   # override $.write and $.writeln function, set tempo_wr obj to tempo_js
   open(tempo_js.path, "w") do |js|
-    rand_var = SecureRandom.random_bytes(4).unpack("H*").join
     include_current_path = tm_filepath.parent.to_s
 
     JSX_HEADER = &lt;&lt;-JSX_HEAD
-var &lt;%= rand_var %&gt; = new File("&lt;%= tempo_wr.path %&gt;");
-&lt;%= rand_var %&gt;.encoding="UTF8";
-&lt;%= rand_var %&gt;.lineFeed="unix";
-&lt;%= rand_var %&gt;.open("e");
-$.write=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write(arguments[0])};
-$.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.writeln(arguments[0])};
+var ___ = new File("&lt;%= tempo_wr.path %&gt;");
+___.encoding="UTF8";
+___.lineFeed="unix";
+___.open("e");
+$.write=function(){___.seek(0,2);___.write(arguments[0])};
+$.writeln=function(){___.seek(0,2);___.writeln(arguments[0])};
 
 #includepath &lt;%= include_current_path %&gt;
 
