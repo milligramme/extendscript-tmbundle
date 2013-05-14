@@ -56,9 +56,9 @@ $.writeln=function(){&lt;%= rand_var %&gt;.seek(0,2);&lt;%= rand_var %&gt;.write
 
 &lt;%= jsx %&gt;
 JSX_HEAD
-    @run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
+    run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
 
-    js.write(@run_jsx)
+    js.write(run_jsx)
   end
 end
 
@@ -108,20 +108,7 @@ TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", tempo_as.path,
             
       error_fd &lt;&lt; "&lt;div id=\"exception_report\" class=\"framed\"&gt;\n"
       error_fd &lt;&lt; "&lt;p id=\"exception\"&gt;&lt;strong&gt;#{htmlize err}&lt;/strong&gt;: #{htmlize msg}&lt;/p&gt;\n"
-      
-      temp_document = @run_jsx
-      from = temp_document[0..start].rindex(/^/)
-      to = start + temp_document[start..-1].index(/$/)
-      src =  "" #temp_document[from...to]
-          
-      line = temp_document[0...start].count("\n") + 1
-      column = start - from
-          
-      # link = "txmt://open?line=#{line}&amp;column=#{column}"
-      # error_fd &lt;&lt; "&lt;pre&gt;#{src}\n"
-      # error_fd &lt;&lt; "#{' ' * (column)}↑&lt;/pre&gt;"
-      # error_fd &lt;&lt;  "&lt;blockquote&gt;&lt;a href=\"#{link}\"&gt;line #{line}, column #{column}&lt;/a&gt; in #{ENV['TM_DISPLAYNAME']}\n"
-          
+                
       error_fd &lt;&lt; "&lt;p&gt;Error #{status}.&lt;/p&gt;\n"
       error_fd &lt;&lt; "&lt;/div&gt;\n"
       error_fd.flush
@@ -131,9 +118,10 @@ TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", "-ss", tempo_as.path,
     end
   when :out
     # read log writen by $.write(), $.writeln() in tempo_js
-    open(tempo_wr.path) do |log|
-      str &lt;&lt; log.read
-    end
+    tempo_wr.open
+    str &lt;&lt; tempo_wr.read
+    tempo_wr.close!
+
     htmlize(str)
   end
 end
