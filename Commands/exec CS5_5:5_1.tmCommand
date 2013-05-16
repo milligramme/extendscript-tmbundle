@@ -128,7 +128,7 @@ end
 	<key>inputFormat</key>
 	<string>text</string>
 	<key>keyEquivalent</key>
-	<string>@%</string>
+	<string>^%</string>
 	<key>name</key>
 	<string>exec CS5.5/5.1</string>
 	<key>outputCaret</key>

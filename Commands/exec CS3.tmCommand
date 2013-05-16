@@ -128,7 +128,7 @@ end
 	<key>inputFormat</key>
 	<string>text</string>
 	<key>keyEquivalent</key>
-	<string>@3</string>
+	<string>^3</string>
 	<key>name</key>
 	<string>exec CS3</string>
 	<key>outputCaret</key>

@@ -128,7 +128,7 @@ end
 	<key>inputFormat</key>
 	<string>text</string>
 	<key>keyEquivalent</key>
-	<string>@4</string>
+	<string>^4</string>
 	<key>name</key>
 	<string>exec CS4</string>
 	<key>outputCaret</key>
