@@ -13,7 +13,6 @@ require ENV["TM_SUPPORT_PATH"] + "/lib/tm/save_current_document"
 require 'tempfile'
 require "erb"
 require "pathname"
-require "securerandom"
 
 cs_version = "CS3"
 
@@ -116,6 +115,7 @@ TextMate::Executor.run(ENV["TM_OSASCRIPT"] || "osascript", tempo_as.path, tempo_
   when :out
     # read log writen by $.write(), $.writeln() in tempo_js
     tempo_wr.open
+    str = "" # clear "true"
     str &lt;&lt; tempo_wr.read
     tempo_wr.close!
 
