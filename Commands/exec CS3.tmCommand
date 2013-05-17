@@ -21,7 +21,6 @@ TextMate::Executor.make_project_master_current_document
 
 error_fd = nil
 tm_filepath = Pathname.new(ENV["TM_FILEPATH"])
-document = tm_filepath.read
 
 APP_PATH_ID = "Adobe InDesign #{cs_version}.app"
 APP_PATH_AI = "/Applications/Adobe Illustrator #{cs_version == 'CS5.5' ? 'CS5.1' : cs_version}/Adobe Illustrator.app"
@@ -53,6 +52,7 @@ $.writeln=function(){___.seek(0,2);___.writeln(arguments[0])};
 #includepath &lt;%= include_current_path %&gt;
 
 &lt;%= jsx %&gt;
+___.close();
 JSX_HEAD
     run_jsx = ERB.new(JSX_HEADER).result(binding).gsub("\\","\\\\")
 
