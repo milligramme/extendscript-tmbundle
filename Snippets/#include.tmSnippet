@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>#include "lib/${0:untitled}.jsxinc"</string>
+	<string>#include "${1:${2:untitled}.jsx${3:inc}}"</string>
 	<key>name</key>
 	<string>#include</string>
 	<key>scope</key>
