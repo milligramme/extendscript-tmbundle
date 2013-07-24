@@ -1,6 +1,8 @@
-# ExtendScript TextMate Bundle
+# [DEPRECATED] ExtendScript TextMate Bundle
 
 forked from [kanemu/extendscript.tmbundle · GitHub](https://github.com/kanemu/extendscript.tmbundle )
+
+This bundle will no longer update. 
 
 usage:
 
