@@ -2,7 +2,8 @@
 
 forked from [kanemu/extendscript.tmbundle · GitHub](https://github.com/kanemu/extendscript.tmbundle )
 
-This bundle will no longer update. 
+This bundle will no longer update, New bundle is here => 
+**[milligramme/Jsx.tmbundle](https://github.com/milligramme/Jsx.tmbundle)**
 
 usage:
 
